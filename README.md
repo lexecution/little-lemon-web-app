@@ -2,7 +2,7 @@
 
 the back end for the little lemon restaurant
 
-`littlelemon/` is the django project and `restaurant/` is the app (models, serializers, views, urls). the home page template lives in `templates/`, its css and images in `static/`, and the unit tests in `tests/`.
+`littlelemon/` is the django project and `restaurant/` is the app. the home page template is in `templates/`, its css and images in `static/` & the unit tests in `tests/`.
 
 ## setup
 
@@ -46,7 +46,7 @@ go to http://127.0.0.1:8000/ and you'll be redirected to the home page at `/rest
 
 ## endpoints
 
-a menu item has a `title`, a `price` and an `inventory` count. a booking has a `name`, `no_of_guests` (at least 1) and a `booking_date`.
+a menu item has a `title`, a `price` and an `inventory` count. a booking has a `name`, `no_of_guests` (at least 1) & a `booking_date`.
 
 | method | path | token needed | what it does |
 | --- | --- | --- | --- |
