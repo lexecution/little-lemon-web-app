@@ -1,200 +1,97 @@
-# Little Lemon – Web Application & REST APIs
+# little lemon web application
 
-Back-end for the **Little Lemon** restaurant, built with **Django** and **Django REST Framework** on a **MySQL** database. It serves a static HTML home page and exposes two APIs: a **Menu API** (ordering food) and a **Table Booking API** (reserving a table for a date and number of guests). User registration and token authentication are provided by **Djoser**.
+the back end for the little lemon restaurant
 
-## Features
+`littlelemon/` is the django project and `restaurant/` is the app (models, serializers, views, urls). the home page template lives in `templates/`, its css and images in `static/`, and the unit tests in `tests/`.
 
-| Requirement | Where it lives |
-| --- | --- |
-| Django serves static HTML content | `templates/index.html`, `static/`, route `/restaurant/` |
-| Back end connected to MySQL | `DATABASES` in `littlelemon/settings.py` (`mysqlclient` driver) |
-| Menu API (CRUD) | `restaurant/views.py` → `MenuItemsView`, `SingleMenuItemView` |
-| Table Booking API (CRUD) | `restaurant/views.py` → `BookingViewSet` (DRF router) |
-| User registration & authentication | Djoser + DRF token authentication |
-| Unit tests | `tests/test_models.py`, `tests/test_views.py` |
-| Testable with Insomnia | See [Testing with Insomnia](#testing-with-insomnia) |
+## setup
 
-## Project structure
+you need python 3.12 or newer, a mysql server on `127.0.0.1:3306`, & git. 
 
-```
-LittleLemon/
-├── manage.py
-├── requirements.txt
-├── README.md             <- this file
-├── Readme.txt            <- API paths for peer review
-├── .gitignore
-├── .env.example          <- optional environment variables
-├── littlelemon/          <- Django project package
-│   ├── settings.py
-│   ├── urls.py
-│   ├── asgi.py
-│   └── wsgi.py
-├── restaurant/           <- Django app
-│   ├── admin.py          <- registers Menu and Booking in the admin
-│   ├── authentication.py <- also accepts "Authorization: Bearer <token>"
-│   ├── models.py         <- Menu and Booking models
-│   ├── serializers.py    <- MenuSerializer, BookingSerializer
-│   ├── views.py          <- index view, Menu views, BookingViewSet
-│   ├── urls.py
-│   └── migrations/
-├── templates/
-│   └── index.html        <- home page
-├── static/
-│   ├── css/style.css
-│   └── img/              <- logos, photos, favicon
-└── tests/
-    ├── test_models.py
-    └── test_views.py
-```
-
-## Prerequisites
-
-* Python 3.12+ (developed and tested on 3.12 with Django 6.1 and Django 5.2 LTS; on older Python versions `pip` resolves to Django 5.2 LTS)
-* A running **MySQL** server (MariaDB also works) on `127.0.0.1:3306`
-* Git
-
-## Setup
-
-### 1. Create a virtual environment and install dependencies
+**1. create a virtual environment and install the requirements**
 
 ```bash
 python -m venv venv
 
-# macOS / Linux
+# macos / linux
 source venv/bin/activate
-# Windows (cmd)
-venv\Scripts\activate
+# windows (cmd)
+venv\scripts\activate
 
 pip install -r requirements.txt
 ```
 
-> **`mysqlclient` build errors?** On Linux install the MySQL client headers first
-> (Debian/Ubuntu: `sudo apt install pkg-config libmysqlclient-dev build-essential python3-dev`).
-> On macOS: `brew install mysql pkg-config`. Windows normally installs a pre-built wheel.
-
-### 2. Create the database
-
-```bash
-mysql -u root -p
-```
+**2. create the database**
 
 ```sql
-CREATE DATABASE LittleLemon CHARACTER SET utf8mb4;
+create database littlelemon character set utf8mb4;
 ```
 
-The default settings expect: database `LittleLemon`, user `root`, empty password, host `127.0.0.1`, port `3306`.
-If your credentials differ, set the environment variables listed in `.env.example`
-(`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST`, `DB_PORT`) instead of editing the code.
+the settings assume user `root`, an empty password, host `127.0.0.1` and port `3306`.
 
-### 3. Run the migrations and create an admin user
+**3. migrate and create an admin user**
 
 ```bash
 python manage.py migrate
 python manage.py createsuperuser
 ```
 
-### 4. Start the server
+**4. run the server**
 
 ```bash
 python manage.py runserver
 ```
 
-Open <http://127.0.0.1:8000/> – it redirects to the home page at <http://127.0.0.1:8000/restaurant/>.
+go to http://127.0.0.1:8000/ and you'll be redirected to the home page at `/restaurant/`. you can add menu items from the admin site at `/admin/` or thru the api.
 
-Optionally add some data from the admin site at <http://127.0.0.1:8000/admin/> (log in with the superuser) or through the APIs below.
+## endpoints
 
-## Data model
+a menu item has a `title`, a `price` and an `inventory` count. a booking has a `name`, `no_of_guests` (at least 1) and a `booking_date`.
 
-| Model | Fields |
-| --- | --- |
-| `Menu` | `id`, `title` (varchar 255), `price` (decimal 10,2), `inventory` (int) |
-| `Booking` | `id`, `name` (varchar 255), `no_of_guests` (int, ≥ 1), `booking_date` (datetime) |
-
-## API reference
-
-Base URL: `http://127.0.0.1:8000`
-
-| Method | Path | Auth | Description |
+| method | path | token needed | what it does |
 | --- | --- | --- | --- |
-| GET | `/restaurant/` | – | Home page (HTML) |
-| GET | `/restaurant/menu/` | – | List menu items |
-| POST | `/restaurant/menu/` | Token | Create a menu item |
-| GET | `/restaurant/menu/<id>` | – | Retrieve one menu item |
-| PUT / PATCH | `/restaurant/menu/<id>` | Token | Update a menu item |
-| DELETE | `/restaurant/menu/<id>` | Token | Delete a menu item |
-| GET | `/restaurant/booking/tables/` | Token | List bookings |
-| POST | `/restaurant/booking/tables/` | Token | Create a booking |
-| GET / PUT / PATCH / DELETE | `/restaurant/booking/tables/<id>/` | Token | Retrieve, update or delete a booking |
-| POST | `/auth/users/` | – | **Register** a new user |
-| GET | `/auth/users/me/` | Token | Current user |
-| POST | `/auth/token/login/` | – | **Login** (Djoser) → `auth_token` |
-| POST | `/auth/token/logout/` | Token | **Logout** (invalidates the token) |
-| POST | `/restaurant/api-token-auth/` | – | Obtain a token (plain DRF view) → `token` |
-| – | `/admin/` | Superuser | Django admin |
+| get | `/restaurant/` | no | home page |
+| get | `/restaurant/menu/` | no | list menu items |
+| post | `/restaurant/menu/` | yes | create a menu item |
+| get | `/restaurant/menu/<id>` | no | get one menu item |
+| put, patch | `/restaurant/menu/<id>` | yes | update a menu item |
+| delete | `/restaurant/menu/<id>` | yes | delete a menu item |
+| get, post | `/restaurant/booking/tables/` | yes | list or create bookings |
+| get, put, patch, delete | `/restaurant/booking/tables/<id>/` | yes | work with one booking |
+| post | `/auth/users/` | no | register |
+| get | `/auth/users/me/` | yes | current user |
+| post | `/auth/token/login/` | no | log in, returns `auth_token` |
+| post | `/auth/token/logout/` | yes | log out and drop the token |
+| post | `/restaurant/api-token-auth/` | no | plain drf login, returns `token` |
+| get | `/admin/` | superuser | django admin |
 
-The menu can be **read** by anyone, but creating, changing or deleting menu items requires a token.
-The booking API is **fully protected**: every request needs a token.
+anyone can read the menu, but changing it needs a token. the booking api needs a token for every request. send it as `authorization: token <token>` or `authorization: bearer <token>`.
 
-### Authentication flow
+## trying the api
 
 ```bash
-# 1. Register
-curl -X POST http://127.0.0.1:8000/auth/users/ \
-  -H "Content-Type: application/json" \
-  -d '{"username": "lex", "email": "lex@example.com", "password": "Str0ng-lemon-pass!"}'
+# register
+curl -x post http://127.0.0.1:8000/auth/users/ \
+  -h "content-type: application/json" \
+  -d '{"username": "lemon", "email": "lemon@example.com", "password": "str0ng-lemon-pass!"}'
 
-# 2. Log in – returns {"auth_token": "<token>"}
-curl -X POST http://127.0.0.1:8000/auth/token/login/ \
-  -H "Content-Type: application/json" \
-  -d '{"username": "lex", "password": "Str0ng-lemon-pass!"}'
+# log in (returns {"auth_token": "<token>"})
+curl -x post http://127.0.0.1:8000/auth/token/login/ \
+  -h "content-type: application/json" \
+  -d '{"username": "lex", "password": "str0ng-lemon-pass!"}'
 
-# 3. Call a protected endpoint
-curl http://127.0.0.1:8000/restaurant/booking/tables/ \
-  -H "Authorization: Token <token>"
+# book a table
+curl -x post http://127.0.0.1:8000/restaurant/booking/tables/ \
+  -h "authorization: token <token>" -h "content-type: application/json" \
+  -d '{"name": "adrian", "no_of_guests": 4, "booking_date": "2026-12-24t19:30:00z"}'
 
-curl -X POST http://127.0.0.1:8000/restaurant/booking/tables/ \
-  -H "Authorization: Token <token>" -H "Content-Type: application/json" \
-  -d '{"name": "Adrian", "no_of_guests": 4, "booking_date": "2026-12-24T19:30:00Z"}'
-
-# 4. Log out
-curl -X POST http://127.0.0.1:8000/auth/token/logout/ \
-  -H "Authorization: Token <token>"
+# log out
+curl -x post http://127.0.0.1:8000/auth/token/logout/ \
+  -h "authorization: token <token>"
 ```
 
-The API accepts both `Authorization: Token <token>` (DRF default) and `Authorization: Bearer <token>`.
-
-## Testing with Insomnia
-
-1. Install [Insomnia](https://insomnia.rest/download) and start the Django server.
-2. **Get a token** – create a `POST` request to `http://127.0.0.1:8000/auth/token/login/` (or `/restaurant/api-token-auth/`), body type **JSON**:
-   `{"username": "<your user>", "password": "<your password>"}`. Copy the token from the response.
-3. **Menu API** – `GET http://127.0.0.1:8000/restaurant/menu/` lists the items. To change data, open the **Auth** tab, choose **Bearer Token**, paste the token, then:
-   * `POST /restaurant/menu/` with `{"title": "Burger", "price": "75.60", "inventory": 10}` creates an item.
-   * `PUT /restaurant/menu/<id>` with the full updated JSON modifies it.
-   * `DELETE /restaurant/menu/<id>` removes it. Issue the `GET` again to confirm.
-4. **Booking API** – with the Bearer token set, `GET`/`POST` `http://127.0.0.1:8000/restaurant/booking/tables/`.
-   Without a token the API answers `401 Unauthorized`.
-
-## Running the tests
+## tests
 
 ```bash
 python manage.py test
 ```
-
-Django creates (and afterwards removes) a temporary `test_LittleLemon` database, so the MySQL user needs permission to create databases (`root` has it). The suite covers the models, the home page, the Menu API (including permissions), the Booking API (CRUD and authentication) and registration / login / logout.
-
-## Publishing the project to GitHub
-
-```bash
-git init
-git add .
-git commit -m "Little Lemon web application"
-git branch -M main
-git remote add origin https://github.com/<your-user>/LittleLemon.git
-git push -u origin main
-```
-
-## Notes
-
-* `settings.py` ships with a development-only `SECRET_KEY` and `DEBUG=True`. For any real deployment set `DJANGO_SECRET_KEY`, `DJANGO_DEBUG=False` and `DJANGO_ALLOWED_HOSTS`.
-* Static files are served by Django's development server from the project-level `static/` folder. Run `python manage.py collectstatic` (output goes to `staticfiles/`, which is git-ignored) when deploying.
