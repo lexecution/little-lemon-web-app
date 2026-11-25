@@ -110,7 +110,6 @@ class BookingViewTest(APITestCase):
         self.assertEqual(Booking.objects.count(), 0)
 
     def test_bearer_prefix_is_accepted_too(self):
-        # Insomnia's "Bearer Token" auth type sends "Authorization: Bearer ...".
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.token.key}')
         self.assertEqual(self.client.get(reverse('booking-list')).status_code, 200)
 
@@ -139,11 +138,9 @@ class AuthenticationTest(APITestCase):
         self.assertEqual(login.status_code, 200)
         token = login.data['auth_token']
 
-        # The djoser token opens the secured booking API...
         self.client.credentials(HTTP_AUTHORIZATION=f'Token {token}')
         self.assertEqual(self.client.get(reverse('booking-list')).status_code, 200)
 
-        # ...and stops working after logout.
         self.assertEqual(self.client.post('/auth/token/logout/').status_code, 204)
         self.assertEqual(self.client.get(reverse('booking-list')).status_code, 401)
 
