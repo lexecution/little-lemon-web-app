@@ -24,7 +24,7 @@ pip install -r requirements.txt
 **2. create the database**
 
 ```sql
-create database littlelemon character set utf8mb4;
+CREATE DATABASE LittleLemon CHARACTER SET utf8mb4;
 ```
 
 the settings assume user `root`, an empty password, host `127.0.0.1` and port `3306`.
@@ -71,23 +71,23 @@ anyone can read the menu, but changing it needs a token. the booking api needs a
 
 ```bash
 # register
-curl -x post http://127.0.0.1:8000/auth/users/ \
-  -h "content-type: application/json" \
-  -d '{"username": "lemon", "email": "lemon@example.com", "password": "str0ng-lemon-pass!"}'
+curl -X POST http://127.0.0.1:8000/auth/users/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "lex", "email": "lex@example.com", "password": "Str0ng-lemon-pass!"}'
 
 # log in (returns {"auth_token": "<token>"})
-curl -x post http://127.0.0.1:8000/auth/token/login/ \
-  -h "content-type: application/json" \
-  -d '{"username": "lex", "password": "str0ng-lemon-pass!"}'
+curl -X POST http://127.0.0.1:8000/auth/token/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "lex", "password": "Str0ng-lemon-pass!"}'
 
 # book a table
-curl -x post http://127.0.0.1:8000/restaurant/booking/tables/ \
-  -h "authorization: token <token>" -h "content-type: application/json" \
-  -d '{"name": "adrian", "no_of_guests": 4, "booking_date": "2026-12-24t19:30:00z"}'
+curl -X POST http://127.0.0.1:8000/restaurant/booking/tables/ \
+  -H "Authorization: Token <token>" -H "Content-Type: application/json" \
+  -d '{"name": "Adrian", "no_of_guests": 4, "booking_date": "2026-12-24T19:30:00Z"}'
 
 # log out
-curl -x post http://127.0.0.1:8000/auth/token/logout/ \
-  -h "authorization: token <token>"
+curl -X POST http://127.0.0.1:8000/auth/token/logout/ \
+  -H "Authorization: Token <token>"
 ```
 
 ## tests
@@ -95,3 +95,5 @@ curl -x post http://127.0.0.1:8000/auth/token/logout/ \
 ```bash
 python manage.py test
 ```
+
+in insomnia, post to /auth/token/login/ to get a token, then use the auth tab then bearer token and paste it
