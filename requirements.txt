@@ -1,0 +1,6 @@
+# Tested with Django 5.2 LTS and Django 6.1 (Django 6.x needs Python 3.12+).
+Django>=5.2,<6.2
+djangorestframework>=3.16,<4.0
+djoser>=2.3,<3.0
+# MySQL driver (may need system libraries, see README.md)
+mysqlclient>=2.2,<3.0
